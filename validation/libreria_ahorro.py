@@ -1,78 +1,114 @@
 import re
 import random
+from datetime import datetime
 
-# ==========================================
-# REQUERIMIENTO AHO-0013: Librería de Funciones
-# ==========================================
+# --- Lógica de negocio y cálculos ---
 
 def validar_documento(documento):
-    """Valida que el documento sea estrictamente numérico."""
-    patron = r'^\d+$'
+    # Cédula o documento entre 6 y 12 dígitos (regla BD)
+    patron = r'^\d{6,12}$'
     return bool(re.match(patron, str(documento)))
 
 def calcular_interes(monto, tasa_anual, meses):
-    """Calcula el interés simple de una cuenta o meta."""
+    if monto < 0 or tasa_anual < 0 or meses < 0:
+        return 0.0
     return monto * (tasa_anual / 100) * (meses / 12)
 
 def actualizar_saldo(saldo_actual, monto_transaccion, es_ingreso=True):
-    """Actualiza el saldo sumando o restando según el tipo de movimiento."""
     if es_ingreso:
         return saldo_actual + monto_transaccion
-    else:
-        return saldo_actual - monto_transaccion
+    return saldo_actual - monto_transaccion
 
 def generar_id():
-    """Genera un ID único numérico aleatorio de 6 dígitos."""
     return random.randint(100000, 999999)
 
 
-# ==========================================
-# REQUERIMIENTO AHO-0012: Validaciones y Try-Except
-# ==========================================
+# --- Validaciones puras (para usar en APIs o formularios) ---
 
-# 1. Validaciones con Expresiones Regulares (Regex)
 def validar_correo(correo):
-    """Valida que el texto tenga un formato estándar de correo electrónico."""
     patron = r'^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$'
-    return bool(re.match(patron, correo))
+    return bool(re.match(patron, str(correo)))
 
 def validar_telefono(telefono):
-    """Valida que el teléfono tenga exactamente 10 dígitos."""
+    # Número de celular a 10 dígitos
     patron = r'^\d{10}$'
     return bool(re.match(patron, str(telefono)))
 
-def validar_fecha(fecha):
-    """Valida que la fecha tenga el formato YYYY-MM-DD."""
-    patron = r'^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$'
-    return bool(re.match(patron, fecha))
+def validar_fecha(fecha_texto):
+    try:
+        datetime.strptime(fecha_texto, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
 
-# 2. Bloques Try-Except para inputs numéricos sin break ni continue
+def validar_tipo_movimiento(tipo):
+    tipo_limpio = str(tipo).strip().capitalize()
+    return tipo_limpio in ("Ingreso", "Retiro")
+
+
+# --- Capturas por terminal con control de flujo (sin break/continue) ---
+
 def solicitar_id(mensaje):
-    """Solicita un ID numérico controlando errores con banderas booleanas."""
-    id_valido = False
+    valido = False
     valor_id = 0
     
-    while not id_valido:
+    while not valido:
         entrada = input(mensaje)
         try:
             valor_id = int(entrada)
-            id_valido = True
+            if valor_id > 0:
+                valido = True
+            else:
+                print("El ID debe ser mayor a 0.")
         except ValueError:
-            print("Error: El ID debe ser un número entero válido. Inténtelo nuevamente.")
+            print("Error: Ingresa un número entero válido.")
             
     return valor_id
 
 def solicitar_monto(mensaje):
-    """Solicita un monto monetario controlando errores con banderas booleanas."""
-    monto_valido = False
+    valido = False
     valor_monto = 0.0
     
-    while not monto_valido:
+    while not valido:
         entrada = input(mensaje)
         try:
             valor_monto = float(entrada)
-            monto_valido = True
+            if valor_monto >= 0:
+                valido = True
+            else:
+                print("El monto no puede ser negativo.")
         except ValueError:
-            print("Error: El monto no es válido. Solo se permiten números y punto para decimales.")
+            print("Error: Usa solo números y punto decimal.")
             
     return valor_monto
+
+def solicitar_fecha(mensaje):
+    valido = False
+    fecha_formateada = ""
+    
+    while not valido:
+        entrada = input(mensaje)
+        try:
+            objeto_fecha = datetime.strptime(entrada, "%Y-%m-%d")
+            fecha_formateada = objeto_fecha.strftime("%Y-%m-%d")
+            valido = True
+        except ValueError:
+            print("Fecha inválida. Usa el formato AAAA-MM-DD.")
+            
+    return fecha_formateada
+
+def solicitar_tipo_movimiento(mensaje):
+    valido = False
+    tipo_movimiento = ""
+    
+    while not valido:
+        entrada = input(mensaje)
+        texto_limpio = entrada.strip().capitalize()
+        
+        if texto_limpio in ("Ingreso", "Retiro"):
+            tipo_movimiento = texto_limpio
+            valido = True
+        else:
+            print("Opción inválida. Debe ser 'Ingreso' o 'Retiro'.")
+            
+    return tipo_movimiento
