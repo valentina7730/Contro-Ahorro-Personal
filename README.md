@@ -1,5 +1,8 @@
 # Control de Ahorro Personal
 
+# Link de github:  https://github.com/valentina7730/Contro-Ahorro-Personal.git
+# link de Google Drive:  https://github.com/valentina7730/Contro-Ahorro-Personal.git
+
 Proyecto de Programación V (CIAF). Endpoints en Python por consola que trabajan sobre una base de datos MySQL de ahorro personal.
 
 ## Estructura
